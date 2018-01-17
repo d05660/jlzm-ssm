@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="1 seconds">
+
+  <property name="log.root.level" value="DEBUG" />
+  <property name="log.other.level" value="DEBUG" />
+  <property name="log.base" value="logs" />
+  <property name="log.moduleName" value="ssm-project" />
+  <property name="log.max.size" value="100MB" />
+  
+  <!--控制台输出 -->
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</Pattern>
+    </encoder>
+  </appender>
+
+  <!-- 日志文件输出 -->
+  <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <File>${log.base}/${log.moduleName}.log</File>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <Pattern>
+        %d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n
+      </Pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <!-- rollover daily -->
+      <fileNamePattern>mylog-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
+       <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+       <maxFileSize>${log.max.size}</maxFileSize>    
+       <maxHistory>60</maxHistory>
+       <totalSizeCap>1GB</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+  
+  <!-- Send logs to both console and file audit -->
+  <logger name="org.cloud.ssm.mapper" level="info" additivity="false">
+    <appender-ref ref="stdout" />
+    <appender-ref ref="file" />
+  </logger>
+
+  <logger name="org.mybatis" level="info" />
+
+  <root level="debug">
+    <appender-ref ref="stdout" /> <!-- 标识这个appender将会添加到这个logger -->
+    <appender-ref ref="file" />
+  </root>
+</configuration>  

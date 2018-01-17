@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+    PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+  <!--<settings>
+    &lt;!&ndash; 打印查询语句 &ndash;&gt;
+    <setting name="logImpl" value="STDOUT_LOGGING" />
+  </settings>-->
+
+  <typeAliases>
+    <typeAlias type="org.cloud.ssm.domain.User" alias="User" />
+    <typeAlias type="org.cloud.ssm.domain.Role" alias="Role" />
+    <typeAlias type="org.cloud.ssm.domain.Permission" alias="Permission" />
+    <typeAlias type="org.cloud.ssm.domain.RolePermission" alias="RolePermission" />
+    <typeAlias type="org.cloud.ssm.domain.UserRole" alias="UserRole" />
+  </typeAliases>
+  
+  <plugins>
+    <plugin interceptor="com.github.pagehelper.PageInterceptor" >
+      <property name="offsetAsPageNum" value="true" />
+      <property name="rowBoundsWithCount" value="true" />
+      <property name="reasonable" value="true" />
+    </plugin>
+  </plugins>
+
+</configuration>

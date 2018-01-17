@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:aop="http://www.springframework.org/schema/aop"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context.xsd
+                        http://www.springframework.org/schema/mvc
+                        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+                        http://www.springframework.org/schema/aop
+                        http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+  <!-- 注解驱动 ,识别注解 -->
+  <mvc:annotation-driven />
+
+  <!-- 自动扫描该包，使SpringMVC认为包下用了@controller注解的类是控制器 -->
+  <context:component-scan base-package="org.cloud.ssm.controller">
+    <context:include-filter type="annotation"
+      expression="org.springframework.stereotype.Controller" />
+  </context:component-scan>
+
+  <!-- 开启aop代理：主要作用是拦截controller层方法的注解，获取注解上下文，需要在容器启动时优先加载 ， 所以放在mvc中 。proxy-target-class为false使用jdk动态代理，true为Cglib动态代理增强 -->
+  <aop:aspectj-autoproxy proxy-target-class="true" />
+
+  <!-- 视图解析器和json解析器,第一种配置，返回json需要@responsebody注解 -->
+  <!-- 在JSP和Freemarker的配置项中都有一个order property，把freemarker的order设置为0，jsp为1。 
+    意思是找view时，先找freemarker文件，再找jsp文件做为视图。 -->
+  <bean id="jspViewResolver"
+    class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+    <property name="viewClass"
+      value="org.springframework.web.servlet.view.JstlView" />
+    <property name="prefix" value="/WEB-INF/view/" />
+    <property name="suffix" value=".jsp" />
+    <property name="order" value="1" />
+  </bean>
+
+  <!-- 输出json格式 -->
+  <bean id="mappingJacksonHttpMessageConverter"
+    class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+    <property name="supportedMediaTypes">
+      <list>
+        <value>text/html;charset=UTF-8</value>
+        <value>application/json;charset=UTF-8</value>
+      </list>
+    </property>
+  </bean>
+
+  <!-- 启动Spring MVC的注解功能@ResponseBody，完成请求和注解POJO的映射 -->
+  <bean
+    class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+    <property name="messageConverters">
+      <list>
+        <ref bean="mappingJacksonHttpMessageConverter" />
+      </list>
+    </property>
+  </bean>
+
+  <mvc:interceptors>
+    <bean
+      class="org.springframework.mobile.device.DeviceResolverHandlerInterceptor" />
+  </mvc:interceptors>
+
+  <mvc:annotation-driven>
+    <mvc:argument-resolvers>
+      <bean
+        class="org.springframework.mobile.device.DeviceWebArgumentResolver" />
+    </mvc:argument-resolvers>
+  </mvc:annotation-driven>
+
+  <!-- spring全局异常处理,继承SimpleMappingExceptionResolver <bean class="org.cloud.handler.MyExceptionHandler"></bean> -->
+
+  <!-- 配置文件上传，如果没有使用文件上传可以不用配置，当然如果不配，那么配置文件中也不必引入上传组件包 -->
+  <bean id="multipartResolver"
+    class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    <property name="defaultEncoding" value="utf-8" />
+    <property name="maxUploadSize" value="10485760000" />
+    <property name="maxInMemorySize" value="40960" />
+  </bean>
+
+  <!-- 存储区域设置信息 -->
+  <bean id="localeResolver"
+    class="org.springframework.web.servlet.i18n.SessionLocaleResolver">
+    <property name="defaultLocale" value="zh_CN" />
+  </bean>
+  <!-- 国际化资源文件 -->
+  <bean id="messageSource"
+    class="org.springframework.context.support.ResourceBundleMessageSource">
+    <property name="cacheSeconds" value="60" />
+    <property name="useCodeAsDefaultMessage" value="true" />
+    <property name="basename" value="messages.messages" />
+  </bean>
+
+  <mvc:resources mapping="/js/**" location="/js/" />
+  <mvc:resources mapping="/css/**" location="/css/" />
+  <mvc:resources mapping="/images/**" location="/images/" />
+
+  <mvc:interceptors>
+    <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+      <property name="paramName" value="lang" />
+    </bean>
+  </mvc:interceptors>
+
+  <!-- 过滤静态资源，必须加上注解支持 ,（针对于web.xml中springmvc配置文件的<url-pattern>/</url-pattern> 
+    导致资源全部被拦截的场景） -->
+</beans>

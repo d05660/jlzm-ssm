@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="org.cloud.ssm.mapper.RoleMapper">
+
+  <resultMap type="Role" id="roleMap">
+    <id column="id" property="id" />
+    <result column="role" property="role" />
+    <result column="description" property="description" />
+    <collection property="rolePermissions" column="role_id"
+      ofType="RolePermission">
+      <association column="permission_id" property="permission" javaType="Permission">
+        <id column="id" property="id"></id>
+        <result column="permission" property="permission" />
+        <result column="description" property="description" />
+      </association>
+    </collection>
+  </resultMap>
+
+  <select id="selectAll" resultMap="roleMap">
+    SELECT * 
+    FROM `sys_roles` 
+    LEFT JOIN `sys_roles_permissions` ON 
+    sys_roles.id=sys_roles_permissions.role_id 
+    LEFT JOIN `sys_permissions` ON 
+    sys_roles_permissions.permission_id=sys_permissions.id
+  </select>
+
+  <insert id="insert" parameterType="Role">
+    INSERT INTO 
+    `sys_roles` (role,description) 
+    VALUES(#{role},#{description})
+  </insert>
+  
+  <update id="updateByPrimaryKey" parameterType="Role">
+    update sys_roles 
+    set role=#{role},description=#{description} 
+    where id=#{id}
+  </update>
+  
+  <select id="selectByPrimaryKey" parameterType="int" resultMap="roleMap">
+    SELECT * 
+    FROM `sys_roles` 
+    LEFT JOIN `sys_roles_permissions` ON 
+    sys_roles.id=sys_roles_permissions.role_id 
+    LEFT JOIN `sys_permissions` ON 
+    sys_roles_permissions.permission_id=sys_permissions.id
+    <where>
+      `sys_roles`.id=#{id}
+    </where>
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="Role">
+    delete from `sys_roles` where id=#{id}
+  </delete>
+
+  <insert id="addRolePermission" useGeneratedKeys="true" parameterType="RolePermission">
+    insert into sys_roles_permissions(role_id,permission_id) values (#{0},#{1})
+  </insert>
+
+  <delete id="deleteRolePermission" parameterType="long">
+    delete from `sys_roles_permissions` where role_id=#{0} and permission_id={1}
+  </delete>
+
+  <delete id="deleteRoles" parameterType="long">
+    delete from `sys_roles_permissions` where role_id=#{0}
+  </delete>
+
+</mapper>

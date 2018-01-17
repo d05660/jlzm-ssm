@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="org.cloud.ssm.mapper.PermissionMapper">
+
+  <select id="selectAll" resultType="Permission">
+    SELECT * FROM `sys_permissions`
+  </select>
+
+  <insert id="insert">
+    INSERT INTO `sys_permissions` (permission,description)
+    VALUES (#{permission},#{description})
+  </insert>
+
+  <delete id="deleteByPrimaryKey">
+    DELETE FROM `sys_permissions` WHERE id=#{id}
+  </delete>
+
+  <select id="selectByPrimaryKey" parameterType="long">
+    SELECT * 
+    FROM `sys_permissions` 
+    <where>
+      id=#{id}
+    </where>
+  </select>
+
+  <update id="updateByPrimaryKey" parameterType="Permission">
+    UPDATE 
+      `sys_permissions`
+    SET
+      permission=#{permission},
+      description=#{description}
+    WHERE
+      id=#{id}
+  </update>
+
+  <delete id="deletePermissionsById" parameterType="long">
+    DELETE FROM `sys_roles_permissions`
+    <where>
+      permission_id=#{id}
+    </where>
+  </delete>
+</mapper>
