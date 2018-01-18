@@ -19,7 +19,7 @@ import org.cloud.ssm.common.ResponseMessage;
 import org.cloud.ssm.domain.User;
 import org.cloud.ssm.security.JwtToken;
 import org.cloud.ssm.service.IUserService;
-import org.cloud.ssm.utils.JWTUtil;
+import org.cloud.ssm.utils.TokenUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +45,8 @@ public class LoginController {
         String username = loginUser.getUsername();
         String password = loginUser.getPassword();
 
-        String token = JWTUtil.sign(username, password);
+        // 验证用户名密码成功后生成token
+        String token = TokenUtil.generateToken(username, device);
 
         // 构建JwtToken
         JwtToken jwtToken = new JwtToken(username, token);
