@@ -8,19 +8,20 @@ public class JwtToken implements AuthenticationToken {
      * 
      */
     private static final long serialVersionUID = 1L;
-    
+
     private String principal;
 
     private String token;
-    
-    public JwtToken() {}
+
+    public JwtToken() {
+    }
 
     public JwtToken(String principal, String token) {
         super();
         this.principal = principal;
         this.token = token;
     }
-    
+
     public JwtToken(String token) {
         super();
         this.token = token;

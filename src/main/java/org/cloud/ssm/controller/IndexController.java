@@ -1,5 +1,7 @@
 package org.cloud.ssm.controller;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.cloud.ssm.common.ResponseMessage;
 import org.cloud.ssm.service.IUserService;
 import org.slf4j.Logger;
@@ -31,5 +33,16 @@ public class IndexController {
 	    ResponseMessage rMessage = new ResponseMessage();
 	    rMessage.setMsg("sdfsadf");
         return rMessage;
+    }
+	
+	@GetMapping("/article")
+	@ResponseBody
+    public ResponseMessage article() {
+        Subject subject = SecurityUtils.getSubject();
+        if (subject.isAuthenticated()) {
+            return new ResponseMessage(200, "You are already logged in");
+        } else {
+            return new ResponseMessage(200, "You are guest");
+        }
     }
 }

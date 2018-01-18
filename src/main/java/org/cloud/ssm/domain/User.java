@@ -46,4 +46,9 @@ public class User {
     public void setUserRoles(List<UserRole> userRoles) {
         this.userRoles = userRoles;
     }
+
+    @Override
+    public String toString() {
+        return "User [username=" + username + ", password=" + password + "]";
+    }
 }

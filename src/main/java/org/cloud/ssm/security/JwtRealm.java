@@ -5,17 +5,21 @@ import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
-import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.util.ByteSource;
 import org.cloud.ssm.domain.User;
 import org.cloud.ssm.service.IUserService;
-import org.cloud.ssm.utils.TokenUtil;
+import org.cloud.ssm.utils.JWTUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class JwtRealm extends AuthorizingRealm {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(JwtRealm.class);
 
     @Autowired
     IUserService userService;
@@ -26,40 +30,39 @@ public class JwtRealm extends AuthorizingRealm {
         return token instanceof JwtToken;
     }
     
+    /**
+     * 
+     * 只有当需要检测用户权限的时候才会调用此方法，例如checkRole,checkPermission之类的
+     */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-        String username = (String)principals.getPrimaryPrincipal();
+        String username = JWTUtil.getUsername(principals.toString());
+        //User user = userService.findByUsername(username);
         SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
         authorizationInfo.setRoles(userService.findRoles(username));
         authorizationInfo.setStringPermissions(userService.findPermissions(username));
         return authorizationInfo;
     }
-
+    
+    /**
+     * 默认使用此方法进行用户名正确与否验证，错误抛出异常即可。
+     */
     @Override
-    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
-        JwtToken jwtToken = (JwtToken) authenticationToken;
-        // 获取token
-        String token = jwtToken.getToken();
-        // 从token中获取用户名
-        String username = TokenUtil.getUsernameFromToken(token);
-        System.out.println(username);
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        String username = (String) token.getPrincipal();
         // 根据用户名查询数据库
         User user = userService.findByUsername(username);
-
-        // 用户不存在
         if (user == null) {
-            throw new UnknownAccountException();
+            LOGGER.error("username or password error");
         }
-        
         if(Boolean.TRUE.equals(user.getLocked())) {
+            LOGGER.error("user locked");
             throw new LockedAccountException(); //帐号锁定
         }
-
-        try {
-            return new SimpleAuthenticationInfo(username, token, getName());
-        } catch (Exception e) {
-            throw new AuthenticationException(e);
-        }
+        LOGGER.debug(JWTUtil.sign(username, user.getPassword()));
+        return new SimpleAuthenticationInfo(user.getUsername(), JWTUtil.sign(username, user.getPassword()), 
+                ByteSource.Util.bytes(username), 
+                "my_realm");
     }
     
     @Override
